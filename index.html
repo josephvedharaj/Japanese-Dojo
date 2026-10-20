@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>Hiragana Dojo — Japanese Practice</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    try {
+      const savedTheme = localStorage.getItem("hiragana-dojo-theme-v2");
+      document.documentElement.dataset.theme = savedTheme || "light";
+    } catch (_) {
+      document.documentElement.dataset.theme = "light";
+    }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#/" aria-label="Hiragana Dojo home" id="brandLink">
+        <span class="brand-mark">あ</span>
+        <span><strong>Hiragana Dojo</strong><small>Your daily Japanese practice</small></span>
+      </a>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch theme">
+        <span id="themeIcon" aria-hidden="true">☾</span><span id="themeLabel">Dark theme</span>
+      </button>
+    </header>
+
+    <main>
+      <!-- ============ HOME PAGE ============ -->
+      <section id="homePage" class="page page-enter" aria-labelledby="homeTitle">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">ひらがな · HIRAGANA</p>
+            <h1 id="homeTitle">Build your Japanese <span>one character at a time.</span></h1>
+            <p class="hero-description">Choose the characters you want to learn, then practice reading, writing, or both.</p>
+          </div>
+          <div class="hero-kana" aria-hidden="true">あ <span>か</span> さ</div>
+        </section>
+
+        <!-- Practice launcher lives at the TOP of the home page -->
+        <div class="practice-launch panel" aria-label="Practice setup">
+          <div class="practice-settings">
+            <p class="settings-title">Practice direction</p>
+            <label class="mode-option">
+              <input type="checkbox" id="modeRead" checked>
+              <span class="mode-icon">あ<span>→</span>A</span>
+              <span class="mode-copy"><strong>Japanese → pronunciation</strong><small>See a kana and type its romaji</small></span>
+            </label>
+            <label class="mode-option">
+              <input type="checkbox" id="modeWrite" checked>
+              <span class="mode-icon">A<span>→</span>あ</span>
+              <span class="mode-copy"><strong>Pronunciation → Japanese</strong><small>See romaji and type the kana</small></span>
+            </label>
+          </div>
+          <div class="practice-cta">
+            <p class="cta-hint"><strong id="ctaCount">46</strong> characters selected · <kbd>Enter</kbd> starts a session</p>
+            <button id="practiceButton" class="button button-primary practice-button" type="button">
+              <span>Practice Hiragana</span><span aria-hidden="true">→</span>
+            </button>
+            <p id="setupMessage" class="setup-message" role="status"></p>
+          </div>
+        </div>
+
+        <section class="selection-panel panel" aria-labelledby="selectionTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">YOUR STUDY SET</p>
+            <h2 id="selectionTitle">Choose your hiragana</h2>
+            <p class="muted">Your selection is saved automatically on this device.</p>
+          </div>
+          <div class="selection-count"><strong id="selectedCount">46</strong><span>selected</span></div>
+        </div>
+
+        <div class="selection-toolbar">
+          <label class="select-all-label"><input id="selectAll" type="checkbox" checked><span>Select all</span></label>
+          <div class="toolbar-actions">
+            <button id="selectNone" class="button button-quiet" type="button">Clear all</button>
+          </div>
+        </div>
+
+        <div id="kanaGroups" class="kana-groups" aria-label="Hiragana character selection"></div>
+      </section>
+      </section>
+
+      <!-- ============ PRACTICE PAGE ============ -->
+      <section id="quizPanel" class="page quiz-panel panel" hidden aria-labelledby="quizTitle">
+        <div class="quiz-topline">
+          <div>
+            <p class="eyebrow">PRACTICE SESSION</p>
+            <h2 id="quizTitle">Let's practice</h2>
+          </div>
+          <button id="exitPractice" class="button button-quiet" type="button">← Change selection <kbd>Esc</kbd></button>
+        </div>
+        <div class="progress-meta"><span id="progressLabel">Question 1 of 92</span><span id="progressPercent">0%</span></div>
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+
+        <div class="question-card">
+          <span id="questionType" class="question-type">READING</span>
+          <p id="questionPrompt" class="question-prompt">What is the pronunciation?</p>
+          <div id="questionDisplay" class="question-display">あ</div>
+          <p id="questionHint" class="question-hint">Type the romaji pronunciation</p>
+          <form id="answerForm" autocomplete="off">
+            <label class="sr-only" for="answerInput">Your answer</label>
+            <input id="answerInput" class="answer-input" type="text" autocapitalize="off" spellcheck="false" placeholder="Type your answer…" required>
+            <button id="checkButton" class="button button-primary check-button" type="submit">Check answer</button>
+          </form>
+          <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+          <div id="wrongActions" class="answer-actions" hidden>
+            <button id="retryButton" class="button button-primary" type="button">Try again</button>
+            <button id="revealButton" class="button button-quiet" type="button">Show answer & continue</button>
+          </div>
+          <button id="nextButton" class="button button-primary next-button" type="button" hidden>Next question →</button>
+        </div>
+        <div id="completion" class="completion" hidden>
+          <div class="confetti" id="confetti" aria-hidden="true"></div>
+          <div class="completion-mark">✓</div>
+          <p class="eyebrow">SESSION COMPLETE</p>
+          <h2>お疲れさま！ Well done!</h2>
+          <p id="completionSummary" class="muted">You finished your practice round.</p>
+          <p class="completion-hint">Press <kbd>Enter</kbd> to practice the same set again</p>
+          <div class="completion-actions">
+            <button id="practiceAgain" class="button button-primary" type="button">Practice again</button>
+            <button id="backToSelection" class="button button-quiet" type="button">Change selection</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>Small steps, steady practice. がんばって！</footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
