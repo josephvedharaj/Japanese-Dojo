@@ -17,14 +17,43 @@
     { name: "M row", note: "ま行", letters: [["ま","ma"],["み","mi"],["む","mu"],["め","me"],["も","mo"]] },
     { name: "Y row", note: "や行", letters: [["や","ya"],["ゆ","yu"],["よ","yo"]] },
     { name: "R row", note: "ら行", letters: [["ら","ra"],["り","ri"],["る","ru"],["れ","re"],["ろ","ro"]] },
-    { name: "W row & N", note: "わ行", letters: [["わ","wa"],["を","wo"],["ん","n"]] }
+    { name: "W row & N", note: "わ行", letters: [["わ","wa"],["を","wo"],["ん","n"]] },
+    { name: "G row (dakuten)", note: "ガ行", letters: [["が","ga"],["ぎ","gi"],["ぐ","gu"],["げ","ge"],["ご","go"]] },
+    { name: "Z row (dakuten)", note: "ザ行", letters: [["ざ","za"],["じ","ji"],["ず","zu"],["ぜ","ze"],["ぞ","zo"]] },
+    { name: "D row (dakuten)", note: "ダ行", letters: [["だ","da"],["ぢ","ji"],["づ","zu"],["で","de"],["ど","do"]] },
+    { name: "B row (dakuten)", note: "バ行", letters: [["ば","ba"],["び","bi"],["ぶ","bu"],["べ","be"],["ぼ","bo"]] },
+    { name: "P row (handakuten)", note: "パ行", letters: [["ぱ","pa"],["ぴ","pi"],["ぷ","pu"],["ぺ","pe"],["ぽ","po"]] },
+    { name: "K yōon", note: "きゃ行", letters: [["きゃ","kya"],["きゅ","kyu"],["きょ","kyo"]] },
+    { name: "S yōon", note: "しゃ行", letters: [["しゃ","sha"],["しゅ","shu"],["しょ","sho"]] },
+    { name: "T yōon", note: "ちゃ行", letters: [["ちゃ","cha"],["ちゅ","chu"],["ちょ","cho"]] },
+    { name: "N yōon", note: "にゃ行", letters: [["にゃ","nya"],["にゅ","nyu"],["にょ","nyo"]] },
+    { name: "H yōon", note: "ひゃ行", letters: [["ひゃ","hya"],["ひゅ","hyu"],["ひょ","hyo"]] },
+    { name: "M yōon", note: "みゃ行", letters: [["みゃ","mya"],["みゅ","myu"],["みょ","myo"]] },
+    { name: "R yōon", note: "りゃ行", letters: [["りゃ","rya"],["りゅ","ryu"],["りょ","ryo"]] },
+    { name: "G yōon", note: "ぎゃ行", letters: [["ぎゃ","gya"],["ぎゅ","gyu"],["ぎょ","gyo"]] },
+    { name: "J yōon", note: "じゃ行", letters: [["じゃ","ja"],["じゅ","ju"],["じょ","jo"]] },
+    { name: "B yōon", note: "びゃ行", letters: [["びゃ","bya"],["びゅ","byu"],["びょ","byo"]] },
+    { name: "P yōon", note: "ぴゃ行", letters: [["ぴゃ","pya"],["ぴゅ","pyu"],["ぴょ","pyo"]] }
   ];
   const allLetters = groups.flatMap(group => group.letters.map(([kana, romaji]) => ({ kana, romaji })));
   const byKana = new Map(allLetters.map(item => [item.kana, item]));
 
+  // Base letters (original 46) vs the newly added combination/dakuten letters (58).
+  const baseGroupNames = new Set([
+    "Vowels","K row","S row","T row","N row","H row","M row","Y row","R row","W row & N"
+  ]);
+  const baseLetters = new Set(
+    groups.filter(g => baseGroupNames.has(g.name)).flatMap(g => g.letters.map(([k]) => k))
+  );
+  const comboLetters = new Set(
+    groups.filter(g => !baseGroupNames.has(g.name)).flatMap(g => g.letters.map(([k]) => k))
+  );
+
   const $ = id => document.getElementById(id);
   const kanaGroups = $("kanaGroups");
   const selectAll = $("selectAll");
+  const selectBase = $("selectBase");
+  const selectCombo = $("selectCombo");
   const selectedCount = $("selectedCount");
   const practiceButton = $("practiceButton");
   const setupMessage = $("setupMessage");
@@ -44,6 +73,7 @@
   let questionIndex = 0;
   let correctCount = 0;
   let answeredCurrent = false;
+  let advanceTimer = null;
 
   function safeGet(key) {
     try { return localStorage.getItem(key); } catch (_) { return null; }
@@ -161,17 +191,44 @@
       section.append(heading, grid);
       kanaGroups.appendChild(section);
     });
+    // Scroll-reveal for kana groups
+    if (typeof IntersectionObserver !== "undefined") {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+      kanaGroups.querySelectorAll(".kana-group").forEach(group => {
+        group.classList.add("reveal-on-scroll");
+        observer.observe(group);
+      });
+    }
     updateSelectionSummary();
   }
 
   function updateSelectionSummary() {
+    const total = allLetters.length;
     selectedCount.textContent = String(selectedKanas.size);
-    selectAll.checked = selectedKanas.size === allLetters.length;
-    selectAll.indeterminate = selectedKanas.size > 0 && selectedKanas.size < allLetters.length;
+    selectAll.checked = selectedKanas.size === total;
+    selectAll.indeterminate = selectedKanas.size > 0 && selectedKanas.size < total;
+
+    const baseSelected = [...baseLetters].every(k => selectedKanas.has(k));
+    const baseAny = [...baseLetters].some(k => selectedKanas.has(k));
+    selectBase.checked = baseSelected;
+    selectBase.indeterminate = baseAny && !baseSelected;
+
+    const comboSelected = [...comboLetters].every(k => selectedKanas.has(k));
+    const comboAny = [...comboLetters].some(k => selectedKanas.has(k));
+    selectCombo.checked = comboSelected;
+    selectCombo.indeterminate = comboAny && !comboSelected;
+
     const ctaCount = $("ctaCount");
-    if (ctaCount) ctaCount.textContent = String(selectedKanas.size);
+    if (ctaCount) ctaCount.textContent = `${selectedKanas.size}/${total} characters selected`;
     practiceButton.querySelector("span:first-child").textContent =
-      selectedKanas.size === allLetters.length ? "Practice Hiragana" : "Practice selected";
+      selectedKanas.size === total ? "Practice Hiragana" : "Practice selected";
   }
 
   function setSelection(kanaList) {
@@ -220,9 +277,14 @@
     quizPanel.hidden = !onPractice;
     replayAnimation(onPractice ? quizPanel : homePage);
     window.scrollTo({ top: 0, behavior: "auto" });
+    // Scroll-to-top runs after the synchronous focus in renderQuestion(),
+    // so re-focus and scroll the answer input into view here to keep it
+    // visible on the practice page (especially on mobile keyboards).
+    if (onPractice) focusAnswerInput();
   }
 
   function startPractice() {
+    clearAdvanceTimer();
     setupMessage.textContent = "";
     persistSelection();
     persistModes();
@@ -245,6 +307,7 @@
   }
 
   function renderQuestion() {
+    clearAdvanceTimer();
     if (questionIndex >= questions.length) {
       showCompletion();
       return;
@@ -270,33 +333,45 @@
     display.classList.remove("animate-in");
     void display.offsetWidth;
     display.classList.add("animate-in");
-    requestAnimationFrame(() => answerInput.focus({ preventScroll: true }));
+    focusAnswerInput();
   }
 
   function normalizeAnswer(value) {
     return value.trim().toLowerCase().replace(/\s+/g, "");
   }
 
-  function checkAnswer(event) {
-    event.preventDefault();
-    if (answeredCurrent) return;
+  // Returns true when the typed answer matches the expected answer.
+  // For write mode we also accept a kana that shares the romaji, so the
+  // ji/zu pairs (じ・ぢ and ず・づ) are treated as correct either way.
+  function answerIsCorrect(actual, question) {
+    const trimmed = actual.trim();
+    if (question.type === "read") {
+      return normalizeAnswer(trimmed) === normalizeAnswer(question.romaji);
+    }
+    const nfc = trimmed.normalize("NFC");
+    const expected = byKana.get(question.kana);
+    const typed = byKana.get(nfc);
+    return nfc === question.kana || (!!typed && !!expected && typed.romaji === expected.romaji);
+  }
+
+  // Show the result of an answer and (when correct) schedule the auto-advance.
+  function handleResult(isCorrect) {
     const question = questions[questionIndex];
-    const expected = question.type === "read" ? question.romaji : question.kana;
-    const actual = answerInput.value.trim();
-    const isCorrect = question.type === "read"
-      ? normalizeAnswer(actual) === normalizeAnswer(expected)
-      : actual.normalize("NFC") === expected;
     if (isCorrect) {
       answeredCurrent = true;
       correctCount++;
-      answerInput.disabled = true;
+      // Don't set disabled or readOnly — that dismisses the mobile keyboard.
+      // The answeredCurrent flag already blocks further input processing.
+      answerInput.classList.add("correct-flash");
+      setTimeout(() => answerInput.classList.remove("correct-flash"), 600);
       $("checkButton").hidden = true;
       feedback.className = "feedback correct";
       feedback.textContent = "Correct! 正解 🎉";
       feedback.hidden = false;
       wrongActions.hidden = true;
       nextButton.hidden = false;
-      nextButton.focus();
+      // Keep focus on answerInput — keeps the mobile keyboard alive
+      scheduleAutoAdvance();
     } else {
       feedback.className = "feedback incorrect";
       feedback.textContent = "Not quite — try again, or reveal the answer to continue.";
@@ -304,6 +379,69 @@
       wrongActions.hidden = false;
       answerInput.focus();
       answerInput.select();
+    }
+  }
+
+  function checkAnswer(event) {
+    if (event) event.preventDefault();
+    if (answeredCurrent) return;
+    const value = answerInput.value.trim();
+    if (!value) return;
+    if (answerIsCorrect(value, questions[questionIndex])) {
+      handleResult(true);
+    } else {
+      handleResult(false);
+    }
+  }
+
+  // Auto-advance to the next question after a short delay so the learner can
+  // see the "Correct!" feedback before the card changes.
+  function scheduleAutoAdvance() {
+    if (advanceTimer) clearTimeout(advanceTimer);
+    advanceTimer = setTimeout(() => {
+      advanceTimer = null;
+      nextQuestion();
+    }, 700);
+  }
+
+  function clearAdvanceTimer() {
+    if (advanceTimer) {
+      clearTimeout(advanceTimer);
+      advanceTimer = null;
+    }
+  }
+
+  // Move focus to the answer input so the learner can keep typing without
+  // reaching for the mouse/trackpad, and scroll it into view so it stays
+  // visible above the on-screen keyboard on mobile. `preventScroll: true`
+  // avoids an immediate jarring scroll; the deferred `scrollIntoView` runs
+  // after the keyboard has had a moment to open and resize the viewport.
+  function focusAnswerInput() {
+    // If the input already has focus, don't re-call focus() — that can
+    // cause the mobile keyboard to flicker (dismiss then reopen).
+    const alreadyFocused = document.activeElement === answerInput;
+
+    const doFocus = () => answerInput.focus({ preventScroll: true });
+    const doScroll = () =>
+      answerInput.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+
+    if (alreadyFocused) {
+      // Keyboard is already open — scroll immediately.
+      requestAnimationFrame(doScroll);
+    } else {
+      // Focus first, then wait for the mobile keyboard to open and resize the
+      // viewport before scrolling, otherwise the scroll target is wrong.
+      requestAnimationFrame(doFocus);
+      setTimeout(doScroll, 350);
+    }
+  }
+
+  // Check the answer as soon as it is typed correctly — no "Check answer"
+  // click required. Skips IME composition events so Japanese input works.
+  function tryAutoCheck() {
+    if (answeredCurrent) return;
+    if (answerIsCorrect(answerInput.value, questions[questionIndex])) {
+      handleResult(true);
     }
   }
 
@@ -318,7 +456,6 @@
     const question = questions[questionIndex];
     const expected = question.type === "read" ? question.romaji : question.kana;
     answeredCurrent = true;
-    answerInput.disabled = true;
     $("checkButton").hidden = true;
     feedback.className = "feedback incorrect";
     feedback.textContent = `Answer: ${expected}`;
@@ -336,41 +473,63 @@
   }
 
   function showCompletion() {
+    const total = questions.length;
+    const isPerfect = total > 0 && correctCount === total;
     document.querySelector(".question-card").hidden = true;
     completion.hidden = false;
-    $("progressLabel").textContent = `Completed ${questions.length} questions`;
+    $("progressLabel").textContent = `Completed ${total} questions`;
     $("progressPercent").textContent = "100%";
     $("progressBar").style.width = "100%";
-    const percent = questions.length ? Math.round(correctCount / questions.length * 100) : 0;
-    $("completionSummary").textContent = `You answered ${correctCount} of ${questions.length} questions correctly on the first try (${percent}%).`;
+    const percent = total ? Math.round(correctCount / total * 100) : 0;
+    $("completionScore").textContent = `${correctCount} / ${total}`;
+    $("completionScore").className = `completion-score${isPerfect ? " perfect" : ""}`;
+    $("completionBadge").textContent = isPerfect ? "PERFECT SCORE! 👑" : "";
+    $("completionSummary").textContent = `You answered ${correctCount} of ${total} questions correctly on the first try (${percent}%).`;
+    const mark = document.querySelector(".completion-mark");
+    if (isPerfect) mark.classList.add("perfect");
+    else mark.classList.remove("perfect");
     replayAnimation(completion);
-    launchConfetti();
+    // Add stagger animations
+    const staggerEls = completion.querySelectorAll(".completion-mark, .completion-badge, .completion-score, .eyebrow, h2, .muted, .completion-hint, .completion-actions");
+    staggerEls.forEach((el, i) => {
+      el.classList.remove("stagger-1", "stagger-2", "stagger-3", "stagger-4", "stagger-5");
+      el.classList.add(`stagger-${Math.min(i + 1, 5)}`);
+    });
+    launchConfetti(isPerfect ? 120 : 40);
     $("practiceAgain").focus();
   }
 
-  // Simple, dependency-free confetti burst for the completion screen.
-  function launchConfetti() {
+  function launchConfetti(count = 40) {
     const holder = $("confetti");
     if (!holder) return;
     holder.innerHTML = "";
-    const colors = ["#6157e8", "#16845b", "#c43d52", "#f2b53c", "#4aa3f0"];
+    const colors = ["#6354e8", "#16845b", "#e85d6f", "#f2b53c", "#4aa3f0", "#ffd700", "#ff69b4", "#26c6a0"];
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < count; i++) {
       const piece = document.createElement("span");
       piece.className = "confetti-piece";
+      const isCircle = Math.random() > 0.5;
+      const w = 6 + Math.random() * 6;
+      const h = isCircle ? w : 8 + Math.random() * 8;
       piece.style.left = Math.random() * 100 + "%";
+      piece.style.width = w + "px";
+      piece.style.height = h + "px";
+      piece.style.borderRadius = isCircle ? "50%" : "2px";
       piece.style.background = colors[i % colors.length];
-      piece.style.animationDelay = (Math.random() * 0.4) + "s";
-      piece.style.animationDuration = (1.6 + Math.random() * 1.2) + "s";
-      piece.style.setProperty("--x", (Math.random() * 120 - 60) + "px");
+      piece.style.animationDelay = (Math.random() * 0.5) + "s";
+      piece.style.animationDuration = (1.4 + Math.random() * 1.0) + "s";
+      piece.style.setProperty("--x", (Math.random() * 140 - 70) + "px");
       piece.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+      piece.style.setProperty("--spin", (Math.random() * 720 - 360) + "deg");
+      piece.style.willChange = "transform";
       holder.appendChild(piece);
     }
-    setTimeout(() => { holder.innerHTML = ""; }, 3200);
+    setTimeout(() => { holder.innerHTML = ""; }, 3000);
   }
 
   function exitPractice() {
+    clearAdvanceTimer();
     navigate("#/");
     setupMessage.textContent = "";
     $("questionType").hidden = false;
@@ -382,7 +541,11 @@
     document.documentElement.dataset.theme = theme;
     safeSet(STORAGE_KEYS.theme, theme);
     const isDark = theme === "dark";
-    $("themeIcon").textContent = isDark ? "☀" : "☾";
+    const icon = $("themeIcon");
+    icon.textContent = isDark ? "☀" : "☾";
+    icon.classList.remove("theme-icon-rotate");
+    void icon.offsetWidth;
+    icon.classList.add("theme-icon-rotate");
     $("themeLabel").textContent = isDark ? "Light theme" : "Dark theme";
     $("themeToggle").setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -401,6 +564,24 @@
 
   selectAll.addEventListener("change", () => {
     setSelection(selectAll.checked ? allLetters.map(item => item.kana) : []);
+  });
+  selectBase.addEventListener("change", () => {
+    if (selectBase.checked) {
+      baseLetters.forEach(kana => selectedKanas.add(kana));
+    } else {
+      baseLetters.forEach(kana => selectedKanas.delete(kana));
+    }
+    persistSelection();
+    renderLetters();
+  });
+  selectCombo.addEventListener("change", () => {
+    if (selectCombo.checked) {
+      comboLetters.forEach(kana => selectedKanas.add(kana));
+    } else {
+      comboLetters.forEach(kana => selectedKanas.delete(kana));
+    }
+    persistSelection();
+    renderLetters();
   });
   $("selectNone").addEventListener("click", () => setSelection([]));
   modeRead.addEventListener("change", () => {
@@ -423,6 +604,29 @@
   });
   practiceButton.addEventListener("click", startPractice);
   answerForm.addEventListener("submit", checkAnswer);
+  // Auto-check: advance to the next question as soon as the answer is right.
+  // Many mobile keyboards (Gboard, Samsung) set isComposing=true even for
+  // plain Latin romaji because of autocomplete/swipe, so we add a short
+  // delayed fallback to catch those cases without interfering with real IME
+  // composition (e.g., Japanese kana input).
+  let autoCheckTimer = null;
+  answerInput.addEventListener("input", (event) => {
+    if (!event.isComposing) {
+      tryAutoCheck();
+    } else {
+      // Delayed fallback for mobile keyboards that stay in composing mode
+      clearTimeout(autoCheckTimer);
+      autoCheckTimer = setTimeout(tryAutoCheck, 120);
+    }
+  });
+  answerInput.addEventListener("compositionend", () => {
+    clearTimeout(autoCheckTimer);
+    tryAutoCheck();
+  });
+  answerInput.addEventListener("compositionupdate", () => {
+    clearTimeout(autoCheckTimer);
+    autoCheckTimer = setTimeout(tryAutoCheck, 120);
+  });
   $("retryButton").addEventListener("click", retryQuestion);
   $("revealButton").addEventListener("click", revealAnswer);
   nextButton.addEventListener("click", nextQuestion);

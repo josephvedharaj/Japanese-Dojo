@@ -3,8 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Master hiragana characters with interactive practice sessions. Learn Japanese reading and writing one character at a time.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#f6f7fb">
-  <title>Hiragana Dojo — Japanese Practice</title>
+  <title>Hiragana Dojo — Master Japanese Characters</title>
   <link rel="stylesheet" href="style.css">
   <script>
     try {
@@ -55,7 +59,7 @@
             </label>
           </div>
           <div class="practice-cta">
-            <p class="cta-hint"><strong id="ctaCount">46</strong> characters selected · <kbd>Enter</kbd> starts a session</p>
+            <p class="cta-hint"><strong id="ctaCount">46</strong> <kbd>Enter</kbd> starts a session</p>
             <button id="practiceButton" class="button button-primary practice-button" type="button">
               <span>Practice Hiragana</span><span aria-hidden="true">→</span>
             </button>
@@ -75,6 +79,8 @@
 
         <div class="selection-toolbar">
           <label class="select-all-label"><input id="selectAll" type="checkbox" checked><span>Select all</span></label>
+          <label class="select-category-label"><input id="selectBase" type="checkbox" checked><span>Base letters</span></label>
+          <label class="select-category-label"><input id="selectCombo" type="checkbox" checked><span>Combination letters</span></label>
           <div class="toolbar-actions">
             <button id="selectNone" class="button button-quiet" type="button">Clear all</button>
           </div>
@@ -116,6 +122,8 @@
         <div id="completion" class="completion" hidden>
           <div class="confetti" id="confetti" aria-hidden="true"></div>
           <div class="completion-mark">✓</div>
+          <p id="completionBadge" class="completion-badge"></p>
+          <p id="completionScore" class="completion-score">0/0</p>
           <p class="eyebrow">SESSION COMPLETE</p>
           <h2>お疲れさま！ Well done!</h2>
           <p id="completionSummary" class="muted">You finished your practice round.</p>
