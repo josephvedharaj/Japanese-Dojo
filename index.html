@@ -2,141 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Master hiragana characters with interactive practice sessions. Learn Japanese reading and writing one character at a time.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Practice hiragana and katakana — pick the characters you want, then read or write them.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#f6f7fb">
-  <title>Hiragana Dojo — Master Japanese Characters</title>
+  <title>Hiragana Dojo — Hiragana &amp; Katakana Practice</title>
   <link rel="stylesheet" href="style.css">
   <script>
     try {
-      const savedTheme = localStorage.getItem("hiragana-dojo-theme-v2");
-      document.documentElement.dataset.theme = savedTheme || "light";
+      document.documentElement.dataset.theme = localStorage.getItem("hiragana-dojo-theme-v2") || "light";
     } catch (_) {
       document.documentElement.dataset.theme = "light";
     }
   </script>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#/" aria-label="Hiragana Dojo home" id="brandLink">
-        <span class="brand-mark">あ</span>
-        <span><strong>Hiragana Dojo</strong><small>Your daily Japanese practice</small></span>
-      </a>
-      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch theme">
-        <span id="themeIcon" aria-hidden="true">☾</span><span id="themeLabel">Dark theme</span>
-      </button>
-    </header>
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="Japanese Dojo home">
+      <span class="brand-mark" lang="ja">あ</span>
+      <strong>Japanese Dojo</strong>
+    </a>
+    <div class="topbar-tools">
+    <button id="soundToggle" class="icon-button" type="button" aria-label="Turn sound off" aria-pressed="true">
+      <span id="soundIcon" class="theme-icon" aria-hidden="true"></span>
+    </button>
+    <button id="themeToggle" class="icon-button" type="button" aria-label="Switch to dark theme">
+      <span id="themeIcon" class="theme-icon" aria-hidden="true"></span>
+    </button>
+    </div>
+  </header>
 
-    <main>
-      <!-- ============ HOME PAGE ============ -->
-      <section id="homePage" class="page page-enter" aria-labelledby="homeTitle">
-        <section class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">ひらがな · HIRAGANA</p>
-            <h1 id="homeTitle">Build your Japanese <span>one character at a time.</span></h1>
-            <p class="hero-description">Choose the characters you want to learn, then practice reading, writing, or both.</p>
-          </div>
-          <div class="hero-kana" aria-hidden="true">あ <span>か</span> さ</div>
-        </section>
+  <main class="app">
+    <!-- ============ HOME: pick characters ============ -->
+    <section id="homePage" class="home" aria-labelledby="homeTitle">
+      <h1 id="homeTitle">Pick characters to practice</h1>
 
-        <!-- Practice launcher lives at the TOP of the home page -->
-        <div class="practice-launch panel" aria-label="Practice setup">
-          <div class="practice-settings">
-            <p class="settings-title">Practice direction</p>
-            <label class="mode-option">
-              <input type="checkbox" id="modeRead" checked>
-              <span class="mode-icon">あ<span>→</span>A</span>
-              <span class="mode-copy"><strong>Japanese → pronunciation</strong><small>See a kana and type its romaji</small></span>
-            </label>
-            <label class="mode-option">
-              <input type="checkbox" id="modeWrite" checked>
-              <span class="mode-icon">A<span>→</span>あ</span>
-              <span class="mode-copy"><strong>Pronunciation → Japanese</strong><small>See romaji and type the kana</small></span>
-            </label>
-          </div>
-          <div class="practice-cta">
-            <p class="cta-hint"><strong id="ctaCount">46</strong> <kbd>Enter</kbd> starts a session</p>
-            <button id="practiceButton" class="button button-primary practice-button" type="button">
-              <span>Practice Hiragana</span><span aria-hidden="true">→</span>
-            </button>
-            <p id="setupMessage" class="setup-message" role="status"></p>
-          </div>
+      <div class="script-tabs" role="tablist" aria-label="Writing system">
+        <button class="script-tab" id="tab-hiragana" data-script="hiragana" role="tab" aria-selected="true" aria-controls="kanaGroups" type="button">
+          <span class="script-tab-kana" lang="ja" aria-hidden="true">あ</span>
+          <span>Hiragana</span>
+          <span class="script-tab-count" id="tabCount-hiragana">0</span>
+        </button>
+        <button class="script-tab" id="tab-katakana" data-script="katakana" role="tab" aria-selected="false" aria-controls="kanaGroups" tabindex="-1" type="button">
+          <span class="script-tab-kana" lang="ja" aria-hidden="true">ア</span>
+          <span>Katakana</span>
+          <span class="script-tab-count" id="tabCount-katakana">0</span>
+        </button>
+      </div>
+
+      <div class="selection-bar">
+        <p id="selectionSummary" class="selection-summary">0 of 0 selected</p>
+        <div class="selection-actions">
+          <button id="selectAll" class="text-button" type="button">Select all</button>
+          <button id="selectNone" class="text-button" type="button">Clear</button>
         </div>
+      </div>
 
-        <section class="selection-panel panel" aria-labelledby="selectionTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">YOUR STUDY SET</p>
-            <h2 id="selectionTitle">Choose your hiragana</h2>
-            <p class="muted">Your selection is saved automatically on this device.</p>
-          </div>
-          <div class="selection-count"><strong id="selectedCount">46</strong><span>selected</span></div>
-        </div>
+      <div id="kanaGroups" class="kana-sections" role="tabpanel" aria-labelledby="tab-hiragana"></div>
+    </section>
 
-        <div class="selection-toolbar">
-          <label class="select-all-label"><input id="selectAll" type="checkbox" checked><span>Select all</span></label>
-          <label class="select-category-label"><input id="selectBase" type="checkbox" checked><span>Base letters</span></label>
-          <label class="select-category-label"><input id="selectCombo" type="checkbox" checked><span>Combination letters</span></label>
-          <div class="toolbar-actions">
-            <button id="selectNone" class="button button-quiet" type="button">Clear all</button>
-          </div>
-        </div>
+    <!-- ============ PRACTICE ============ -->
+    <section id="quizPanel" class="practice" hidden aria-label="Practice">
+      <div class="practice-top">
+        <button id="exitPractice" class="icon-button" type="button" aria-label="End practice (Esc)" title="End practice (Esc)">✕</button>
+        <div class="progress-track" aria-hidden="true"><div id="progressBar" class="progress-bar"></div></div>
+        <span id="progressLabel" class="progress-count">1/1</span>
+      </div>
 
-        <div id="kanaGroups" class="kana-groups" aria-label="Hiragana character selection"></div>
-      </section>
-      </section>
+      <div class="question-card">
+        <p id="questionType" class="question-type">Type the romaji</p>
+        <div id="questionDisplay" class="question-display" lang="ja">あ</div>
+        <form id="answerForm" class="answer-form" autocomplete="off">
+          <label class="sr-only" for="answerInput">Your answer</label>
+          <input id="answerInput" class="answer-input" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
+          <button id="checkButton" class="button button-primary check-button" type="submit">
+            <span class="check-label">Check</span>
+            <svg class="check-tick tick-svg" viewBox="0 0 24 24" aria-hidden="true"><polyline points="5 12.5 10 17.5 19 7"/></svg>
+          </button>
+        </form>
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+        <div class="answer-actions">
+          <button id="revealButton" class="text-button reveal-button" type="button">Show answer</button>
+          <button id="nextButton" class="button button-primary next-button" type="button" hidden>Continue →</button>
+        </div>
+      </div>
 
-      <!-- ============ PRACTICE PAGE ============ -->
-      <section id="quizPanel" class="page quiz-panel panel" hidden aria-labelledby="quizTitle">
-        <div class="quiz-topline">
-          <div>
-            <p class="eyebrow">PRACTICE SESSION</p>
-            <h2 id="quizTitle">Let's practice</h2>
-          </div>
-          <button id="exitPractice" class="button button-quiet" type="button">← Change selection <kbd>Esc</kbd></button>
-        </div>
-        <div class="progress-meta"><span id="progressLabel">Question 1 of 92</span><span id="progressPercent">0%</span></div>
-        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+      <div id="kanaKeyboard" class="kb-mount"></div>
 
-        <div class="question-card">
-          <span id="questionType" class="question-type">READING</span>
-          <p id="questionPrompt" class="question-prompt">What is the pronunciation?</p>
-          <div id="questionDisplay" class="question-display">あ</div>
-          <p id="questionHint" class="question-hint">Type the romaji pronunciation</p>
-          <form id="answerForm" autocomplete="off">
-            <label class="sr-only" for="answerInput">Your answer</label>
-            <input id="answerInput" class="answer-input" type="text" autocapitalize="off" spellcheck="false" placeholder="Type your answer…" required>
-            <button id="checkButton" class="button button-primary check-button" type="submit">Check answer</button>
-          </form>
-          <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
-          <div id="wrongActions" class="answer-actions" hidden>
-            <button id="retryButton" class="button button-primary" type="button">Try again</button>
-            <button id="revealButton" class="button button-quiet" type="button">Show answer & continue</button>
-          </div>
-          <button id="nextButton" class="button button-primary next-button" type="button" hidden>Next question →</button>
+      <div id="completion" class="completion" hidden>
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+        <p id="completionScore" class="completion-score">0/0</p>
+        <p id="completionTitle" class="completion-title">Well done!</p>
+        <p id="completionSummary" class="completion-text"></p>
+        <div id="missedReview" class="missed-review" hidden>
+          <p class="missed-title">Review these</p>
+          <div id="missedList" class="missed-list"></div>
         </div>
-        <div id="completion" class="completion" hidden>
-          <div class="confetti" id="confetti" aria-hidden="true"></div>
-          <div class="completion-mark">✓</div>
-          <p id="completionBadge" class="completion-badge"></p>
-          <p id="completionScore" class="completion-score">0/0</p>
-          <p class="eyebrow">SESSION COMPLETE</p>
-          <h2>お疲れさま！ Well done!</h2>
-          <p id="completionSummary" class="muted">You finished your practice round.</p>
-          <p class="completion-hint">Press <kbd>Enter</kbd> to practice the same set again</p>
-          <div class="completion-actions">
-            <button id="practiceAgain" class="button button-primary" type="button">Practice again</button>
-            <button id="backToSelection" class="button button-quiet" type="button">Change selection</button>
-          </div>
+        <div class="completion-actions">
+          <button id="practiceMissed" class="button button-primary" type="button" hidden>Practice missed</button>
+          <button id="practiceAgain" class="button button-quiet" type="button">Again</button>
+          <button id="backToSelection" class="button button-quiet" type="button">Done</button>
         </div>
-      </section>
-    </main>
-    <footer>Small steps, steady practice. がんばって！</footer>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ START BAR (home only) ============ -->
+  <div id="startBar" class="start-bar">
+    <div class="start-bar-inner">
+      <div class="mode-switch" role="radiogroup" aria-label="Practice mode">
+        <button class="mode-button" type="button" role="radio" data-mode="read" aria-checked="false">
+          <strong>Read</strong><small lang="ja">あ → a</small>
+        </button>
+        <button class="mode-button" type="button" role="radio" data-mode="write" aria-checked="false">
+          <strong>Write</strong><small lang="ja">a → あ</small>
+        </button>
+        <button class="mode-button" type="button" role="radio" data-mode="both" aria-checked="true">
+          <strong>Both</strong><small lang="ja">あ ⇄ a</small>
+        </button>
+      </div>
+      <button id="practiceButton" class="button button-primary start-button" type="button">Start</button>
+    </div>
   </div>
+
+  <script src="sound.js"></script>
+  <script src="keyboard.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
