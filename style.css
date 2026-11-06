@@ -169,7 +169,28 @@ body.is-practicing .app {
 
 .theme-icon { display: grid; place-items: center; }
 
-.topbar-tools { display: flex; gap: 8px; }
+.topbar-tools { display: flex; align-items: center; gap: 8px; }
+
+.install-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-size: 14px;
+  font-weight: 650;
+  animation: popIn 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.install-button:hover { background: color-mix(in srgb, var(--primary) 88%, var(--text)); }
+
+/* Installed app: respect the phone's notch / status bar. */
+@media (display-mode: standalone) {
+  .topbar { padding-top: max(14px, env(safe-area-inset-top)); }
+}
 
 #soundToggle[aria-pressed="false"] { color: var(--muted); }
 

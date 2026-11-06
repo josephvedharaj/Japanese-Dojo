@@ -9,6 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#f6f7fb">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Kana Dojo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Hiragana Dojo — Hiragana &amp; Katakana Practice</title>
   <link rel="stylesheet" href="style.css">
   <script>
@@ -26,6 +32,10 @@
       <strong>Japanese Dojo</strong>
     </a>
     <div class="topbar-tools">
+    <button id="installButton" class="install-button" type="button" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      Install
+    </button>
     <button id="soundToggle" class="icon-button" type="button" aria-label="Turn sound off" aria-pressed="true">
       <span id="soundIcon" class="theme-icon" aria-hidden="true"></span>
     </button>
