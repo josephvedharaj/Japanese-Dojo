@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Matches the .brand-mark in the top bar: brand purple, rounded square, white あ -->
-  <rect width="64" height="64" rx="16" fill="#594ecf"/>
-  <text x="32" y="33" text-anchor="middle" dominant-baseline="central"
-        font-family="'Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','Noto Sans JP','Noto Sans CJK JP',sans-serif"
-        font-size="42" font-weight="700" fill="#ffffff">あ</text>
-</svg>
